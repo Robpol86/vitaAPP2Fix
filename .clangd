@@ -1,0 +1,14 @@
+If:
+  PathMatch: vendor/.*
+Diagnostics:
+  Suppress: "*"
+---
+If:
+  PathMatch: (include|module_[a-zA-Z0-9]+)/.*
+CompileFlags:
+  CompilationDatabase: build-debug
+---
+If:
+  PathMatch: tests/.*
+CompileFlags:
+  CompilationDatabase: build-test

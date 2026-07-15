@@ -1,0 +1,33 @@
+name: Minor Checks
+
+on:
+  pull_request:
+    paths: &paths
+      - .github/**
+      - CONTRIBUTING.md
+      - CMakeLists.txt
+  push:
+    paths: *paths
+
+jobs:
+  Main:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Assert CONTRIBUTING.md CMakeLists.txt line number link
+        env:
+          AWK_PROGRAM: '/^project.+ VERSION /{found=1; print NR; exit(0)} END{if (!found) exit(1)}'
+          GREP_PATTERN: 'CMakeLists.txt#L${line_number}[^0-9].*MINOR-YML'
+        run: |
+          set -euxo pipefail
+          if ! line_number="$(awk "$AWK_PROGRAM" ./CMakeLists.txt)"; then
+            echo "::error::awk failed: line number pattern didn't match" >&2
+            exit 1
+          fi
+          if ! grep -P "${{ env.GREP_PATTERN }}" CONTRIBUTING.md; then
+            echo "::error::grep failed: line number pattern didn't match" >&2
+            exit 1
+          fi

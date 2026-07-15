@@ -1,0 +1,19 @@
+@PROJECT_NAME@:
+  attributes: 0
+  version:
+    major: @PROJECT_VERSION_MAJOR@
+    minor: @PROJECT_VERSION_MINOR@
+  main:
+    start: module_start
+  libraries:
+    @PROJECT_NAME@:
+      syscall: true
+      functions:
+        - kvqmbt_device_state
+        - kvqmbt_connect_device
+        - kvqmbt_disconnect_device
+        - kvqmbt_get_paired_devices
+        - kvqmbt_bluetooth_state
+        - kvqmbt_read_event
+        - kvqmbt_get_wrapped_event_flag
+        - kvqmbt_unwrap_event_flag

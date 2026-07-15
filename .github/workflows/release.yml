@@ -1,0 +1,177 @@
+# Required permmissions:
+# - Repo settings > Actions > General > Workflow permissions: Read and write permissions
+
+name: Release
+run-name: "${{ format('{0} [{1}]', inputs.release_version, github.ref_name) }}"
+
+
+concurrency:
+  cancel-in-progress: true
+  group: release
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Version (e.g. 1.2.3)
+        required: true
+        type: string
+
+
+env:
+  NEW_TAG: "v${{ inputs.release_version }}"
+  RELEASE_FILES: |
+    release/module_kernel/vitaQmBluetooth.skprx
+    release/module_user/vitaQmBluetooth.suprx
+    redist/quickmenureborn/QuickMenuReborn.suprx
+    redist/quickmenureborn/qmr_plugin.rco
+
+
+jobs:
+
+  Collect:
+    runs-on: ubuntu-latest
+    env:
+      INPUT_VERSION: "${{ inputs.release_version }}"
+    steps:
+      - name: Validate input
+        id: validate-input
+        run: |
+          set -euxo pipefail
+          if [[ ! "$INPUT_VERSION" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
+            echo "::error::Invalid version: $INPUT_VERSION" >&2
+            exit 1
+          fi
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-tags: true
+      - name: Verify tag does not exist
+        run: |
+          set -euxo pipefail
+          if git tag |grep -q "$NEW_TAG"; then
+            echo "::error::Tag $NEW_TAG already exists" >&2
+            exit 1
+          fi
+      - name: Get changelog section
+        id: get-changelog-section
+        run: |
+          set -euxo pipefail
+          if ! top_section="$(grep -Pom1 '^## \[[0-9]+[.][0-9]+[.][0-9]+\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$' CHANGELOG.md)"; then
+            echo "::error::Invalid CHANGELOG.md: top section not found" >&2
+            exit 1
+          fi
+          echo "DATE=$(grep -Pom1 '[0-9]{4}-[0-9]{2}-[0-9]{2}' <<< "$top_section")" |tee -a "$GITHUB_OUTPUT"
+          if ! echo "$top_section" |grep -P "(?<=[)$INPUT_VERSION(?=])"; then
+            echo "::error::Version mismatch (cl): '$INPUT_VERSION' not in '$top_section'" >&2
+            exit 1
+          fi
+          awk -v begin_marker="$top_section" '
+            $0 == begin_marker { begin_marker_found=1; in_section=1; next }
+            /^## \[/ { end_marker_found=1; in_section=0 }
+            in_section { something_was_printed=1; print }
+            END { if (!begin_marker_found || !end_marker_found || !something_was_printed) exit 1 }
+          ' CHANGELOG.md |tee cl_section.md
+      - name: Verify version in CMakeLists.txt
+        run: |
+          set -euxo pipefail
+          if ! project_line="$(grep -Pm1 '^\s*project\(.+ VERSION [0-9.]+(?=[^0-9.])' CMakeLists.txt)"; then
+            echo "::error::Invalid CMakeLists.txt: project line not found" >&2
+            exit 1
+          fi
+          if ! echo "$project_line" |grep -P "(?<=VERSION )$INPUT_VERSION(?=[^0-9.])"; then
+            echo "::error::Version mismatch (cm): '$INPUT_VERSION' not in '$project_line'" >&2
+            exit 1
+          fi
+      - name: Get install section
+        run: |
+          set -euxo pipefail
+          awk -v begin_marker="INSTALL-BEGIN" -v end_marker="INSTALL-END" '
+            $0 ~ begin_marker { begin_marker_found=1; in_section=1; next }
+            $0 ~ end_marker { end_marker_found=1; in_section=0 }
+            in_section { something_was_printed=1; print }
+            END { if (!begin_marker_found || !end_marker_found || !something_was_printed) exit 1 }
+          ' README.md |tee install.md
+      - name: Get run-id of commit
+        id: get-run-id
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "ci.yml",
+              status: "success",
+              head_sha: context.sha,
+            });
+            if (!data.workflow_runs.length) {
+              core.setFailed(`No successful ci.yml run found for ${context.sha}`);
+              return;
+            }
+            const run = data.workflow_runs[0];
+            core.setOutput("RUN_ID", run.id);
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release
+          path: release
+          run-id: ${{ steps.get-run-id.outputs.RUN_ID }}
+          github-token: "${{ github.token }}"
+      - name: Validate all files
+        id: validate-all-files
+        env:
+          EXPECTED_FILES: |
+            cl_section.md
+            install.md
+            ${{ env.RELEASE_FILES }}
+        run: |
+          set -euxo pipefail
+          printenv EXPECTED_FILES |xargs ls -lah
+          {
+            echo 'EXPECTED_FILES<<EOF'
+            echo "$EXPECTED_FILES"
+            echo EOF
+          } |tee -a "$GITHUB_OUTPUT"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: collected
+          if-no-files-found: error
+          path: ${{ steps.validate-all-files.outputs.EXPECTED_FILES }}
+    outputs:
+      DATE: "${{ steps.get-changelog-section.outputs.DATE }}"
+
+  Release:
+    needs: Collect
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: collected
+      - name: Prepare
+        id: prepare
+        env:
+          DATE: "${{ needs.Collect.outputs.DATE }}"
+        run: |
+          set -euxo pipefail
+          echo "TITLE=$NEW_TAG [$DATE]" |tee -a "$GITHUB_OUTPUT"
+          {
+            echo "## Changelog"
+            cat cl_section.md
+            echo
+            echo "## Install"
+            cat install.md
+          } |tee release_body.md
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: "${{ steps.prepare.outputs.TITLE }}"
+          body_path: release_body.md
+          files: ${{ env.RELEASE_FILES }}
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          tag_name: "${{ env.NEW_TAG }}"
+          target_commitish: "${{ github.sha }}"
+          prerelease: ${{ github.ref_name != 'main' }}
