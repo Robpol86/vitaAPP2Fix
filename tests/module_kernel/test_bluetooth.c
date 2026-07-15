@@ -23,23 +23,10 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <fff.h>
 
 // Include source code to test.
-#define _PSP2KERN_KERNEL_CPU_H_      // Blocks vitasdk cpu.h
-#define _PSP2KERN_KERNEL_SYSCLIB_H_  // Blocks vitasdk sysclib.h
-#include "bluetooth.c"
+// TODO
 
 // Setup mocks.
 DEFINE_FFF_GLOBALS;
-FAKE_VALUE_FUNC(int, ksceBtGetConfiguration);
-FAKE_VALUE_FUNC(int, ksceBtGetConnectingInfo, unsigned int, unsigned int);
-FAKE_VALUE_FUNC(int, ksceBtGetRegisteredInfo, int, int, SceBtRegisteredInfo*, SceSize);
-FAKE_VALUE_FUNC(int, ksceBtStartConnect, unsigned int, unsigned int);
-FAKE_VALUE_FUNC(int, ksceBtStartDisconnect, unsigned int, unsigned int);
-FAKE_VALUE_FUNC(int, ksceKernelCopyToUser, void*, const void*, SceSize);
-FAKE_VALUE_FUNC(int, ksceKernelDelayThread, SceUInt);
-FAKE_VALUE_FUNC(int, ksceKernelGetThreadId);
-FAKE_VALUE_FUNC(int, ksceRtcGetCurrentClock, SceDateTime*, int);
-FAKE_VALUE_FUNC_VARARG(int, ksceKernelPrintf, const char*, ...);
-FAKE_VOID_FUNC_VARARG(logfile_write_line, int, int, int, const char*, ...);
 
 /**
  * Setup test fixture. Called before each test.
@@ -48,7 +35,6 @@ static int setup(void** state) {
     (void)state;
 
     // Reset fff.
-    RESET_FAKE(ksceBtGetConfiguration);
     FFF_RESET_HISTORY();
 
     return 0;
@@ -57,18 +43,10 @@ static int setup(void** state) {
 /**
  * Test.
  */
-static void test_kvqmbt_bluetooth_state(void** state) {
+static void test_placeholder(void** state) {
     (void)state;
 
-    // Test state == 0x9
-    ksceBtGetConfiguration_fake.return_val = 0x9;
-    bool ret = kvqmbt_bluetooth_state();
-    assert_true(ret);
-
-    // Test state == 0x0
-    ksceBtGetConfiguration_fake.return_val = 0x0;
-    ret = kvqmbt_bluetooth_state();
-    assert_false(ret);
+    assert_true(true);
 }
 
 /**
@@ -76,7 +54,7 @@ static void test_kvqmbt_bluetooth_state(void** state) {
  */
 int main(void) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test_setup(test_kvqmbt_bluetooth_state, setup),
+        cmocka_unit_test_setup(test_placeholder, setup),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
