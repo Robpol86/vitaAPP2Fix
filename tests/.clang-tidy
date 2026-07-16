@@ -1,11 +1,3 @@
 InheritParentConfig: true
 Checks: >
   -bugprone-multi-level-implicit-pointer-conversion,
-  -bugprone-reserved-identifier,
-  -bugprone-sizeof-expression,
-  -bugprone-suspicious-include,
-  -cert*,
-  -clang-analyzer-security.VAList,
-  -misc-use-internal-linkage,
-  -readability-else-after-return,
-  -readability-inconsistent-declaration-parameter-name,
