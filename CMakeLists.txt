@@ -34,7 +34,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT UNIT_TESTING)
   add_subdirectory(module_kernel)
-  add_subdirectory(module_user)
 else()
   enable_testing()
   add_subdirectory(tests)

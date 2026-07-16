@@ -47,9 +47,9 @@ file(GLOB_RECURSE TEST_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/
 foreach(test_src_file_abs ${TEST_SRC_FILES})
 
   # Get relative path, top directory name, and test name.
-  file(RELATIVE_PATH test_src_file_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${test_src_file_abs}")  # e.g. module_user/a/test_x.c
-  string(REGEX REPLACE "/.*" "" src_module_dir_name "${test_src_file_rel}")  # e.g. module_user
-  string(REGEX REPLACE "[^a-zA-Z0-9_]" "__" test_name "${MODULE_NAME}__${test_src_file_rel}")  # e.g. vitaQmBluetoothTest__module_user__a__test_x__c
+  file(RELATIVE_PATH test_src_file_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${test_src_file_abs}")  # e.g. module_kernel/a/test_x.c
+  string(REGEX REPLACE "/.*" "" src_module_dir_name "${test_src_file_rel}")  # e.g. module_kernel
+  string(REGEX REPLACE "[^a-zA-Z0-9_]" "__" test_name "${MODULE_NAME}__${test_src_file_rel}")  # e.g. vitaQmBluetoothTest__module_kernel__a__test_x__c
 
   # Add test and its dependencies, like the other CMakeLists.txt files.
   add_executable("${test_name}" "${test_src_file_rel}")
@@ -58,9 +58,6 @@ foreach(test_src_file_abs ${TEST_SRC_FILES})
   target_include_directories("${test_name}" PRIVATE
     "${CMAKE_SOURCE_DIR}/${src_module_dir_name}/src"
   )
-  if(src_module_dir_name STREQUAL "module_user")
-    target_include_directories("${test_name}" PRIVATE "${VENDOR_DIR}/quickmenureborn")
-  endif()
   target_include_directories("${test_name}" PRIVATE "${fff_SOURCE_DIR}")
   target_compile_options("${test_name}" PRIVATE "-idirafter" "$ENV{VITASDK}/arm-vita-eabi/include")
   target_compile_options("${test_name}" PRIVATE -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
