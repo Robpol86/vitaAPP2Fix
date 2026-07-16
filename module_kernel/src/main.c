@@ -21,10 +21,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <psp2kern/kernel/modulemgr.h>
 
-#include "bt_event.h"
 #include "log.h"
 #include "logfile.h"
-#include "umod_callback.h"
 
 /**
  * Main entrypoint. Called when the module is started.
@@ -41,23 +39,8 @@ int module_start(SceSize args, const void* argp) {
     logfile_init();
     LOG_INFO("Starting");
 
-    // Start user module callback handling routines.
-    int ret = umod_cb_start();
-    if (ret < 0) {
-        LOG_ERROR("umod_cb_start returned error 0x%08X", ret);
-        return SCE_KERNEL_START_FAILED;
-    }
-
-    // Start system blueooth event listener thread.
-    ret = bt_event_start();
-    if (ret < 0) {
-        LOG_ERROR("bt_event_start returned error 0x%08X", ret);
-        ret = umod_cb_stop();
-        if (ret < 0) {
-            LOG_ERROR("umod_cb_stop returned error 0x%08X", ret);
-        }
-        return SCE_KERNEL_START_FAILED;
-    }
+    // TODO
+    LOG_INFO("Hello World");
 
     LOG_INFO("Started");
 
@@ -79,19 +62,7 @@ int module_stop(SceSize args, const void* argp) {
 
     LOG_INFO("Stopping");
 
-    // Stop system blueooth event listener thread.
-    int ret = bt_event_stop();
-    if (ret < 0) {
-        LOG_ERROR("bt_event_stop returned error 0x%08X", ret);
-        failed = true;
-    }
-
-    // Stop user module callback handling routines.
-    ret = umod_cb_stop();
-    if (ret < 0) {
-        LOG_ERROR("umod_cb_stop returned error 0x%08X", ret);
-        failed = true;
-    }
+    // TODO
 
     LOG_INFO("Stopped");
 
