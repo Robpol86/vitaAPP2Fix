@@ -21,6 +21,7 @@ function(common_compile_options target)
   target_compile_options("${target}" PRIVATE
     -Wall
     -Werror=format-security
+    -Werror=missing-braces
     -Werror=unused-function
     -Wformat=2
     -fno-exceptions
