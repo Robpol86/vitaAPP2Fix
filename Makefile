@@ -74,7 +74,7 @@ recv-logs:
 
 ## Testing
 
-build-test/compile_commands.json: EXTRA_CMAKE_ARGS = -DCMAKE_C_COMPILER=clang -DUNIT_TESTING=ON
+build-test/compile_commands.json: EXTRA_CMAKE_ARGS = -DCMAKE_CXX_COMPILER=clang++ -DUNIT_TESTING=ON
 
 BUILD_TEST_FILES = $(wildcard tests/* tests/*/* tests/*/*/* tests/*/*/*/*)
 LINT_FORMAT_EXTS := %.c %.cpp %.h %.h.in

@@ -9,8 +9,8 @@ set(MODULE_NAME "${PROJECT_NAME}Kernel")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/exports.yml.in" "${EXPORTS_YML}" @ONLY)
 
 add_executable("${MODULE_NAME}"
-  src/main.c
-  src/logfile.c
+  src/main.cpp
+  src/logfile.cpp
 )
 
 target_compile_definitions("${MODULE_NAME}" PRIVATE ENABLE_VITASDK_BUILD_ASSERT)

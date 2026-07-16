@@ -36,19 +36,19 @@ if(NOT fff_POPULATED)
   FetchContent_MakeAvailable(fff)
 endif()
 
-# Iterate unit test (test_*.c) files.
+# Iterate unit test (test_*.cpp) files.
 set(TEST_TARGETS "")
 set(TEST_ENVIRONMENT
   "ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1"
   "UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1"
 )
-file(GLOB_RECURSE TEST_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/module_*/test_*.c")
+file(GLOB_RECURSE TEST_SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/module_*/test_*.cpp")
 foreach(test_src_file_abs ${TEST_SRC_FILES})
 
   # Get relative path, top directory name, and test name.
-  file(RELATIVE_PATH test_src_file_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${test_src_file_abs}")  # e.g. module_kernel/a/test_x.c
+  file(RELATIVE_PATH test_src_file_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${test_src_file_abs}")  # e.g. module_kernel/a/test_x.cpp
   string(REGEX REPLACE "/.*" "" src_module_dir_name "${test_src_file_rel}")  # e.g. module_kernel
-  string(REGEX REPLACE "[^a-zA-Z0-9_]" "__" test_name "${MODULE_NAME}__${test_src_file_rel}")  # e.g. vitaAPP2FixTest__module_kernel__a__test_x__c
+  string(REGEX REPLACE "[^a-zA-Z0-9_]" "__" test_name "${MODULE_NAME}__${test_src_file_rel}")  # e.g. vitaAPP2FixTest__module_kernel__a__test_x__cpp
 
   # Add test and its dependencies, like the other CMakeLists.txt files.
   add_executable("${test_name}" "${test_src_file_rel}")
@@ -73,7 +73,7 @@ endforeach()
 set_tests_properties(${TEST_TARGETS} PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT}")
 
 # Produce code coverage.
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   list(APPEND GCOVR_ADDITIONAL_ARGS --gcov-executable "llvm-cov gcov")
 endif()
 setup_target_for_coverage_gcovr_xml(
