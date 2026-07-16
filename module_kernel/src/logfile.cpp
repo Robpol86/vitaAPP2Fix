@@ -24,7 +24,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/io/fcntl.h>
 #include <psp2kern/io/stat.h>
 #include <psp2kern/kernel/sysclib.h>
-#include <stdbool.h>
 
 #include "log.h"
 
@@ -79,7 +78,7 @@ void logfile_write_line(int y, int m, int d, const char* line, ...) {
         LOG_ERROR("snprintf returned error 0x%08X", ret);
         return;
     }
-    if ((size_t)ret >= sizeof(log_file_path)) {
+    if (static_cast<size_t>(ret) >= sizeof(log_file_path)) {
         is_initialized = false;
         LOG_ERROR("snprintf truncated the file path");
         return;
@@ -96,11 +95,11 @@ void logfile_write_line(int y, int m, int d, const char* line, ...) {
         return;
     }
     int buffer_len = ret;
-    if ((size_t)buffer_len >= sizeof(buffer)) {
+    if (static_cast<size_t>(buffer_len) >= sizeof(buffer)) {
         // Truncated
         static const char marker[] = " Truncated\n";
         const size_t marker_len = sizeof(marker) - 1;  // exclude NUL
-        buffer_len = sizeof(buffer) - 1;
+        buffer_len = static_cast<int>(sizeof(buffer) - 1);
         memcpy(&buffer[buffer_len - marker_len], marker, marker_len);
     }
 

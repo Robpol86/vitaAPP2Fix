@@ -1,3 +1,6 @@
 InheritParentConfig: true
 Checks: >
   -bugprone-multi-level-implicit-pointer-conversion,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -misc-use-anonymous-namespace,
