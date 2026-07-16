@@ -24,7 +24,13 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <logfile.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void logfile_init(void);
 void logfile_write_line(int y, int m, int d, const char* line, ...) __attribute__((format(printf, 4, 5)));
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // LOGFILE_H_MODULE

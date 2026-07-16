@@ -16,7 +16,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 /******************************************************************************
  * @file
- * @brief Unit tests for bluetooth.c.
+ * @brief Placeholder for unit tests.
  ******************************************************************************/
 
 #include <cmocka.h>

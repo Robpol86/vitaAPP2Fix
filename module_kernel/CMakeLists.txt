@@ -9,7 +9,7 @@ set(MODULE_NAME "${PROJECT_NAME}Kernel")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/exports.yml.in" "${EXPORTS_YML}" @ONLY)
 
 add_executable("${MODULE_NAME}"
-  src/main.c
+  src/main.cpp
   src/logfile.c
 )
 

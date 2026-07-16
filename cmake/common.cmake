@@ -20,10 +20,12 @@ endfunction()
 function(common_compile_options target)
   target_compile_options("${target}" PRIVATE
     -Wall
+    $<$<COMPILE_LANGUAGE:C>:-Werror=strict-prototypes>
     -Werror=format-security
     -Werror=strict-prototypes
     -Werror=unused-function
     -Wformat=2
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit>
     -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/src/=
   )
 endfunction()
