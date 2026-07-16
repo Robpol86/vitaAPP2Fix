@@ -8,7 +8,7 @@ Download the files for the latest version from the releases page: https://github
 
 <!-- INSTALL-BEGIN -->
 
-Upload the four files to your PS Vita to the following locations:
+Upload the following file to your PS Vita to the following locations:
 
 | File              | Vita Folder |
 | ----------------- | ----------- |
