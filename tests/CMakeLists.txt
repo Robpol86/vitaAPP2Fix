@@ -2,7 +2,6 @@ include("${CMAKE_SOURCE_DIR}/cmake/common.cmake" REQUIRED)
 
 # Set variables.
 set(MODULE_NAME "${PROJECT_NAME}Test")
-set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/vendor")
 
 # Enable FetchContent feature.
 include(FetchContent)
@@ -84,5 +83,4 @@ setup_target_for_coverage_gcovr_xml(
   EXCLUDE
     "${CMAKE_BINARY_DIR}/_deps/*"
     "${CMAKE_SOURCE_DIR}/tests/*"
-    "${CMAKE_SOURCE_DIR}/vendor/*"
 )
