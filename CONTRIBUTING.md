@@ -97,12 +97,10 @@ After you've setup **vitacompanion** and **Cat-A-Log** try deploying this projec
     ```
     *KERNEL
     ur0:tai/vitaAPP2Fix.skprx
-    *main
-    ur0:tai/QuickMenuReborn.suprx
     ```
 2. Run this command:
     ```bash
-    make PSVITA_IP=192.168.0.100 deploy-init deploy reboot recv-logs
+    make PSVITA_IP=192.168.0.100 deploy reboot recv-logs
     ```
 
 ## Releases
