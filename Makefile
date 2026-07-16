@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-PROJECT_NAME := vitaAirPodsProTwoFix
+PROJECT_NAME := vitaAPP2Fix
 
 ## Build
 
@@ -30,8 +30,7 @@ deploy: $(DEBUG_TARGETS)
 ifndef PSVITA_IP
 	$(error PSVITA_IP is not set. Install https://github.com/devnoname120/vitacompanion on the Vita and set PSVITA_IP.")
 endif
-	curl -T $(<) "ftp://$(PSVITA_IP):1337/ur0:/QuickMenuReborn/"
-	curl -T $(word 2,$^) "ftp://$(PSVITA_IP):1337/ur0:/tai/"
+	curl -T $(<) "ftp://$(PSVITA_IP):1337/ur0:/tai/"
 	echo screen on |nc -v "$(PSVITA_IP)" 1338
 
 .PHONY: reboot
@@ -66,7 +65,7 @@ tail-todays-log: _HELP = Print the last $NUMLINES in today's log file (calls fet
 tail-todays-log: NUMLINES = 50
 tail-todays-log: DATE = $(shell date +%Y%m%d)
 tail-todays-log: fetch-logs
-	tail -n$(NUMLINES) $(<)/vitaAirPodsProTwoFix-$(DATE).log
+	tail -n$(NUMLINES) $(<)/vitaAPP2Fix-$(DATE).log
 
 .PHONY: recv-logs
 recv-logs: _HELP = Listen for logs sent from the PS Vita, print to stdout (use with Cat-A-Log)

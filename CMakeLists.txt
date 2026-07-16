@@ -25,7 +25,7 @@ if(NOT UNIT_TESTING AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(vitaAirPodsProTwoFix VERSION 0.1.0 LANGUAGES C)
+project(vitaAPP2Fix VERSION 0.1.0 LANGUAGES C)
 
 # Set compiler options.
 set(CMAKE_C_STANDARD 23)

@@ -1,5 +1,5 @@
 /*
-This file is part of vitaAirPodsProTwoFix.
+This file is part of vitaAPP2Fix.
 Copyright © 2026 Robpol86
 
 This program is free software: you can redistribute it and/or modify it under

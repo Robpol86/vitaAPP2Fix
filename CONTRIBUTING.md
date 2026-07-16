@@ -96,7 +96,7 @@ After you've setup **vitacompanion** and **Cat-A-Log** try deploying this projec
 1. Add this to **ur0:tai/config.txt**:
     ```
     *KERNEL
-    ur0:tai/vitaAirPodsProTwoFix.skprx
+    ur0:tai/vitaAPP2Fix.skprx
     *main
     ur0:tai/QuickMenuReborn.suprx
     ```
@@ -113,7 +113,7 @@ These are the steps a maintainer will take to make a new release.
     1. Finalize the [CHANGELOG.md](CHANGELOG.md) file and resetting the **Unreleased** section to "N/A".
     2. Set the new version in the main [`CMakeLists.txt`](CMakeLists.txt#L28) file. <!-- MINOR-YML -->
 2. After merging the PR, run the release workflow:
-    1. https://github.com/Robpol86/vitaAirPodsProTwoFix/actions/workflows/release.yml
+    1. https://github.com/Robpol86/vitaAPP2Fix/actions/workflows/release.yml
     1. Click on the **Run workflow** dropdown in the blue bar.
     1. Leave the branch as `main`, set the new version using the `X.X.X` convention, then click on the green **Run workflow**
        button.

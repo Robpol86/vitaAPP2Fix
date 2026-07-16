@@ -48,7 +48,7 @@ foreach(test_src_file_abs ${TEST_SRC_FILES})
   # Get relative path, top directory name, and test name.
   file(RELATIVE_PATH test_src_file_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${test_src_file_abs}")  # e.g. module_kernel/a/test_x.c
   string(REGEX REPLACE "/.*" "" src_module_dir_name "${test_src_file_rel}")  # e.g. module_kernel
-  string(REGEX REPLACE "[^a-zA-Z0-9_]" "__" test_name "${MODULE_NAME}__${test_src_file_rel}")  # e.g. vitaAirPodsProTwoFixTest__module_kernel__a__test_x__c
+  string(REGEX REPLACE "[^a-zA-Z0-9_]" "__" test_name "${MODULE_NAME}__${test_src_file_rel}")  # e.g. vitaAPP2FixTest__module_kernel__a__test_x__c
 
   # Add test and its dependencies, like the other CMakeLists.txt files.
   add_executable("${test_name}" "${test_src_file_rel}")

@@ -22,7 +22,7 @@ on:
 env:
   NEW_TAG: "v${{ inputs.release_version }}"
   RELEASE_FILES: |
-    release/module_kernel/vitaAirPodsProTwoFix.skprx
+    release/module_kernel/vitaAPP2Fix.skprx
 
 
 jobs:
