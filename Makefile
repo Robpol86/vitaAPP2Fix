@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-PROJECT_NAME := vitaQmBluetooth
+PROJECT_NAME := vitaAirPodsProTwoFix
 
 ## Build
 
@@ -66,7 +66,7 @@ tail-todays-log: _HELP = Print the last $NUMLINES in today's log file (calls fet
 tail-todays-log: NUMLINES = 50
 tail-todays-log: DATE = $(shell date +%Y%m%d)
 tail-todays-log: fetch-logs
-	tail -n$(NUMLINES) $(<)/vitaQmBluetooth-$(DATE).log
+	tail -n$(NUMLINES) $(<)/vitaAirPodsProTwoFix-$(DATE).log
 
 .PHONY: recv-logs
 recv-logs: _HELP = Listen for logs sent from the PS Vita, print to stdout (use with Cat-A-Log)

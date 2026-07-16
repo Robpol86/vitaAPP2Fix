@@ -1,5 +1,5 @@
 /*
-This file is part of vitaQmBluetooth.
+This file is part of vitaAirPodsProTwoFix.
 Copyright © 2026 Robpol86
 
 This program is free software: you can redistribute it and/or modify it under
