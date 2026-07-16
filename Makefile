@@ -65,7 +65,7 @@ tail-todays-log: _HELP = Print the last $NUMLINES in today's log file (calls fet
 tail-todays-log: NUMLINES = 50
 tail-todays-log: DATE = $(shell date +%Y%m%d)
 tail-todays-log: fetch-logs
-	tail -n$(NUMLINES) $(<)/vitaAPP2Fix-$(DATE).log
+	tail -n$(NUMLINES) $(<)/$(PROJECT_NAME)-$(DATE).log
 
 .PHONY: recv-logs
 recv-logs: _HELP = Listen for logs sent from the PS Vita, print to stdout (use with Cat-A-Log)
