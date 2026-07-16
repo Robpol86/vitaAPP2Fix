@@ -13,7 +13,6 @@ Checks: >
   portability-*,
   readability-*,
   -cert-dcl50-cpp,
-  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   -cppcoreguidelines-avoid-c-arrays,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-avoid-magic-numbers,
