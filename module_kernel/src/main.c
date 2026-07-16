@@ -66,6 +66,6 @@ int module_stop(SceSize args, const void* argp) {
 
     LOG_INFO("Stopped");
 
-    // TODO drop (int) cast on new clang-tidy: https://github.com/llvm/llvm-project/issues/195604
-    return (int)failed ? SCE_KERNEL_STOP_FAIL : SCE_KERNEL_STOP_SUCCESS;
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion) TODO remove https://github.com/llvm/llvm-project/issues/195604
+    return failed ? SCE_KERNEL_STOP_FAIL : SCE_KERNEL_STOP_SUCCESS;
 }
