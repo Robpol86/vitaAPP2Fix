@@ -1,0 +1,7 @@
+@PROJECT_NAME@:
+  attributes: 0
+  version:
+    major: @PROJECT_VERSION_MAJOR@
+    minor: @PROJECT_VERSION_MINOR@
+  main:
+    start: module_start

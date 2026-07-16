@@ -1,0 +1,88 @@
+name: Install Vita SDK
+description: Install the Vita SDK and its dependencies.
+
+
+inputs:
+  vitasdk-path:
+    description: Destination directory where the Vita SDK will be installed.
+    required: false
+    default: ${{ runner.tool_cache }}/vitasdk
+
+
+runs:
+  using: composite
+  steps:
+
+    - name: Restore zstd cache (macOS)
+      id: cache-zstd
+      if: runner.os == 'macOS'
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ runner.temp }}/zstd
+        key: zstd-${{ runner.os }}-${{ hashFiles('.github/actions/vitasdk/**') }}
+
+    - name: Download and build zstd (macOS)
+      if: runner.os == 'macOS' && steps.cache-zstd.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        ZSTD_VERSION: 1.5.7
+      run: |
+        set -euxo pipefail
+        mkdir "$RUNNER_TEMP/zstd" && cd "$_"
+        curl -sSL "https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz" |tar -xz
+        mv "zstd-$ZSTD_VERSION" zstd && cd "$_"
+        CFLAGS="-arch x86_64" LDFLAGS="-arch x86_64" arch -x86_64 make lib
+
+    - name: Save zstd cache (macOS)
+      if: runner.os == 'macOS' && steps.cache-zstd.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ runner.temp }}/zstd
+        key: ${{ steps.cache-zstd.outputs.cache-primary-key }}
+
+    - name: Install zstd (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        cd "$RUNNER_TEMP/zstd/zstd/lib"
+        sudo mkdir -p /usr/local/opt/zstd/lib
+        sudo cp -v libzstd.*.dylib /usr/local/opt/zstd/lib/
+
+    - name: Add persistent VITASDK to ENV and PATH
+      shell: bash
+      run: |
+        set -euxo pipefail
+        echo "VITASDK=${{ inputs.vitasdk-path }}" >> "$GITHUB_ENV"
+        echo "${{ inputs.vitasdk-path }}/bin" >> "$GITHUB_PATH"
+
+    - name: Restore vitasdk cache
+      id: cache-vitasdk
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ inputs.vitasdk-path }}
+        key: vitasdk-${{ runner.os }}-${{ hashFiles('.github/actions/vitasdk/**') }}
+
+    - name: Install the Vita SDK
+      if: steps.cache-vitasdk.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        TOKEN: ${{ github.token }}
+      run: |
+        set -euxo pipefail
+        git -C "$RUNNER_TEMP" clone --depth 1 "https://github.com/vitasdk/vdpm"
+        cd "$RUNNER_TEMP/vdpm"
+        bash -exo pipefail ./bootstrap-vitasdk.sh
+        bash -exo pipefail ./install-all.sh
+        cd .. && rm -rf vdpm
+
+    - name: Save vitasdk cache
+      if: steps.cache-vitasdk.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ inputs.vitasdk-path }}
+        key: ${{ steps.cache-vitasdk.outputs.cache-primary-key }}
+
+    - name: Validate Vita SDK
+      shell: bash
+      run: '"$VITASDK/bin/arm-vita-eabi-gcc" --version'

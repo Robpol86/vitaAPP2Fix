@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  BuildTestLint:
+    strategy:
+      matrix:
+        os: >-
+          ${{
+            (github.event_name == 'pull_request' || github.ref == 'refs/heads/main')
+            && fromJSON('["ubuntu-latest", "macos-latest"]')
+            || fromJSON('["ubuntu-latest"]')
+          }}
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y cmake gcovr
+
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install gcovr
+
+      - name: Install Vita SDK
+        uses: ./.github/actions/vitasdk
+        timeout-minutes: 6
+
+      - name: Install clang tools
+        uses: ./.github/actions/clang
+        with:
+          version: "22"
+
+      - name: Restore cmake cache
+        uses: actions/cache@v5
+        with:
+          path: build-*/_deps
+          key: cmake-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+
+      - name: Build
+        run: make build
+
+      - name: Test
+        run: make test
+
+      - name: Lint
+        run: make lint
+
+      - name: Upload release artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release
+          path: build-release/module_*/*.s?prx
+          if-no-files-found: error
+
+      - name: Upload debug artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: debug
+          path: build-debug/module_*/*.s?prx
+          if-no-files-found: error
