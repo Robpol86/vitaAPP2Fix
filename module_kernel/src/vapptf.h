@@ -16,7 +16,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 /******************************************************************************
  * @file
- * @brief Cross-module interface exposed by the kernel module.
+ * @brief Misc declarations for the project.
  ******************************************************************************/
 
 #ifndef VAPPTF_H
