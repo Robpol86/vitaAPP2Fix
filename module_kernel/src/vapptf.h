@@ -24,14 +24,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 // Error codes.
 typedef enum VapptfError : int {
-    VAPPTF_ERROR_INVALID_ARGUMENT = (int)0x80680001,  // Arbitrary first value.
-    VAPPTF_ERROR_KERNEL_SIDE,
-    VAPPTF_ERROR_KERNEL_SIDE_NOT_CONNECTABLE,
-    VAPPTF_ERROR_KERNEL_SIDE_BUSY,
-    VAPPTF_ERROR_CB_OVERFLOW,
-    VAPPTF_ERROR_NOT_READY,
-    VAPPTF_ERROR_GENERAL_FAILURE,
-    VAPPTF_ERROR_KERNEL_SIDE_ALREADY_CONNECTED,
+    VAPPTF_ERROR_KERNEL_SIDE = (int)0x80680001,  // Arbitrary first value.
 } VapptfError;
 
 #endif  // VAPPTF_H
