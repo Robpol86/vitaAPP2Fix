@@ -155,13 +155,7 @@ static int event_thread(SceSize args, void* argp) {
     // Register callback.
     const unsigned int id_mask = ~(
         // Ignore irrelevant IDs. Set to 0xFFFFFFFF to receive and log all events.
-        (1U << VAPPTF_SCE_BT_EVENT_INQUIRY_RESULT) | (1U << VAPPTF_SCE_BT_EVENT_INQUIRY_STOP) |
-        (1U << VAPPTF_SCE_BT_EVENT_PAIRING_REQUEST) | (1U << VAPPTF_SCE_BT_EVENT_CONNECT_REQUESTED) |
-        (1U << VAPPTF_SCE_BT_EVENT_CONNECT_UNPAIRED) | (1U << VAPPTF_SCE_BT_EVENT_BUTTON_PRESSED) |
-        (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN0A) | (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN0B) |
-        (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN0C) | (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN0E) |
-        (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN10) | (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN11) |
-        (1U << VAPPTF_SCE_BT_EVENT_UNKNOWN1C));
+        (1U << VAPPTF_SCE_BT_EVENT_INQUIRY_RESULT) | (1U << VAPPTF_SCE_BT_EVENT_INQUIRY_STOP));
     int ret = ksceBtRegisterCallback(uid_callback, 0, id_mask, 0);
     LOG_DEBUG(0, "ksceBtRegisterCallback returned 0x%08X", ret);
 
