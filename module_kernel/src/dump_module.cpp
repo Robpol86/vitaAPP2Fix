@@ -47,7 +47,8 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
         LOG_ERROR("taiGetModuleInfoForKernel(\"%s\") returned 0x%08X", module_name, ret);
         return ret;
     }
-    LOG_DEBUG(0, "Module \"%s\": modid=0x%08X nid=0x%08X", module_name, tinfo.modid, tinfo.module_nid);
+    LOG_DEBUG(0, "taiGetModuleInfoForKernel(\"%s\") returned modid=0x%08X nid=0x%08X", module_name, tinfo.modid,
+              tinfo.module_nid);
 
     // Guard against reversing the wrong build.
     if (expected_nid != 0 && tinfo.module_nid != expected_nid) {
@@ -64,9 +65,9 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
         LOG_ERROR("ksceKernelGetModuleInfo returned 0x%08X", ret);
         return ret;
     }
+    LOG_DEBUG(0, "returned size=0x%08X modid=0x%08X modattr=0x%08X modver=%08X.%08X module_name=\"%s\" path=\"%s\"",
+              minfo.size, minfo.modid, minfo.modattr, minfo.modver[0], minfo.modver[1], minfo.module_name, minfo.path);
 
-    // Ensure output directory exists (ignore "already exists").
-    ksceIoMkdir(LOGFILE_DIR_PARENT, 0777);
     ksceIoMkdir(DUMP_DIR, 0777);
 
     for (int i = 0; i < 4; i++) {
