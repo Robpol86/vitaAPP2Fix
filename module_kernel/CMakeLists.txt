@@ -11,6 +11,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/exports.yml.in" "${EXPORTS_YML}" @ON
 add_executable("${MODULE_NAME}"
   src/main.cpp
   src/bt_event.cpp
+  src/dump_module.cpp
   src/logfile.cpp
 )
 
@@ -28,6 +29,7 @@ target_link_libraries("${MODULE_NAME}" PRIVATE
   SceBtForDriver_stub
   SceDebugForDriver_stub
   SceIofilemgrForDriver_stub
+  SceModulemgrForKernel_stub
   SceRtcForDriver_stub
   SceSysclibForDriver_stub
   SceSysmemForDriver_stub
