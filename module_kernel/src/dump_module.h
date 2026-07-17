@@ -23,17 +23,23 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define DUMP_MODULE_H
 
 /**
- * Dump every loadable segment of a loaded kernel module to ux0:.
+ * Resolve ksceKernelGetModuleInfo at runtime via module_get_export_func.
+ * Must be called once from module_start before dump_module().
  *
- * The dump is taken from live kernel memory, so it is already decrypted and
- * its addresses match exactly what taiGetModuleInfoForKernel /
- * taiHookFunctionOffsetForKernel will use at runtime -- no SELF decryption and
- * no 3.60-vs-3.65 offset mismatch.
+ * @return 0 on success, negative on error.
+ */
+int dump_module_init(void);
+
+/**
+ * Dump every loadable segment of a running kernel module to ux0:.
  *
- * @param module_name  Module name, e.g. "SceBt".
- * @param expected_nid Module NID to verify against (0 to skip the check).
- *                     If the live module's NID differs, the dump is aborted,
- *                     because any offset you derive from it would not match.
+ * Output: ux0:<PROJECT_NAME>/dumps/<module_name>_seg<N>_0x<vaddr>.bin
+ * Use the vaddr in the filename as Ghidra's image base for that segment.
+ *
+ * @param module_name  Module name as known to taiHEN, e.g. "SceBt".
+ * @param expected_nid Module NID to verify (0 = skip check). If the live
+ *                     module's NID differs, the dump aborts -- offsets derived
+ *                     from a mismatched build would cause panics at hook time.
  * @return 0 on success, negative on error.
  */
 int dump_module(const char* module_name, unsigned int expected_nid);

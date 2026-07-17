@@ -51,6 +51,7 @@ extern "C" int module_start(SceSize args, const void* argp) {
     // Dump.
 #ifndef NDEBUG
     LOG_INFO("BEGIN DUMPING");
+    dump_module_init();
     dump_module("SceBt", 0xF56868B7);  // TODO remove
     LOG_INFO("DONE DUMPING");
 #endif

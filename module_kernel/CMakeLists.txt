@@ -25,11 +25,11 @@ target_link_libraries("${MODULE_NAME}" PRIVATE
   gcc
 
   taihenForKernel_stub
+  taihenModuleUtils_stub
 
   SceBtForDriver_stub
   SceDebugForDriver_stub
   SceIofilemgrForDriver_stub
-  SceModulemgrForKernel_stub
   SceRtcForDriver_stub
   SceSysclibForDriver_stub
   SceSysmemForDriver_stub
