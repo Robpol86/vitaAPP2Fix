@@ -19,8 +19,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
  * @brief Module-agnostic macros for log files.
  ******************************************************************************/
 
-#ifndef LOGFILE_H
-#define LOGFILE_H
+#ifndef LOGFILE_H_INCLUDE
+#define LOGFILE_H_INCLUDE
 
 #define SCE_ERROR_ERRNO_EEXIST 0x80010011
 
@@ -36,4 +36,4 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define LOG_MESSAGE_TO_FILE(y, m, d, fmt, ...) ((void)0)
 #endif  // NDEBUG
 
-#endif  // LOGFILE_H
+#endif  // LOGFILE_H_INCLUDE
