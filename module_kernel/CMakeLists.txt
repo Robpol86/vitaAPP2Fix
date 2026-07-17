@@ -23,6 +23,8 @@ common_link_options("${MODULE_NAME}")
 target_link_libraries("${MODULE_NAME}" PRIVATE
   gcc
 
+  taihenForKernel_stub
+
   SceBtForDriver_stub
   SceDebugForDriver_stub
   SceIofilemgrForDriver_stub

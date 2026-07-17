@@ -12,6 +12,7 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
+  -bugprone-branch-clone,
   -bugprone-easily-swappable-parameters,
   -bugprone-narrowing-conversions,
   -cert-dcl50-cpp,
@@ -24,6 +25,8 @@ Checks: >
   -cppcoreguidelines-narrowing-conversions,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-cstyle-cast,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-use-enum-class,
@@ -31,8 +34,13 @@ Checks: >
   -misc-include-cleaner,
   -misc-no-recursion,
   -misc-use-anonymous-namespace,
+  -misc-use-internal-linkage,
+  -performance-no-int-to-ptr,
+  -readability-braces-around-statements,
   -readability-identifier-length,
   -readability-magic-numbers,
+  -readability-math-missing-parentheses,
+  -readability-use-std-min-max,
 CheckOptions:
   readability-function-cognitive-complexity.IgnoreMacros: true
   readability-function-cognitive-complexity.Threshold: 25
