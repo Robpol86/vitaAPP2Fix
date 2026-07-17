@@ -19,8 +19,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
  * @brief Module-specific macros for logging.
  ******************************************************************************/
 
-#ifndef LOG_H_MODULE
-#define LOG_H_MODULE
+#ifndef LOG_H
+#define LOG_H
 
 #include <psp2kern/kernel/debug.h>
 #include <psp2kern/kernel/rtc.h>
@@ -53,4 +53,4 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <log.h>  // Bring in LOG_DEBUG, LOG_ERROR, and other common macros.
 
-#endif  // LOG_H_MODULE
+#endif  // LOG_H

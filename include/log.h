@@ -19,8 +19,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
  * @brief Module-agnostic macros for logging.
  ******************************************************************************/
 
-#ifndef LOG_H
-#define LOG_H
+#ifndef LOG_H_INCLUDE
+#define LOG_H_INCLUDE
 
 #ifndef NDEBUG
 #define LOG_COLOR_RESET_ "\033[0m"
@@ -83,4 +83,4 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define LOG_DEBUG(delay, msg, ...) LOG_MESSAGE_NOOP_(delay, "", msg, ##__VA_ARGS__)
 #endif  // NDEBUG
 
-#endif  // LOG_H
+#endif  // LOG_H_INCLUDE

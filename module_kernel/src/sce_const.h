@@ -23,8 +23,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
  * uncover better alignments.
  ******************************************************************************/
 
-#ifndef SCE_CONST_H_MODULE
-#define SCE_CONST_H_MODULE
+#ifndef SCE_CONST_H
+#define SCE_CONST_H
 
 #include <psp2kern/bt.h>
 
@@ -61,4 +61,4 @@ typedef enum VapptfInferredBtEventId : unsigned char {
 } VapptfInferredBtEventId;
 static_assert(sizeof(VapptfInferredBtEventId) == sizeof(((SceBtEvent*)0)->id), "SceBtEvent.id changed size?");
 
-#endif  // SCE_CONST_H_MODULE
+#endif  // SCE_CONST_H
