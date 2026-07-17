@@ -36,24 +36,28 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 /**
  * SceBtEvent event IDs and their inferred meanings.
  */
+#define VAPPTF_SCE_BT_EVENT_LIST(X)       \
+    X(INQUIRY_RESULT, 0x01)               \
+    X(INQUIRY_STOP, 0x02)                 \
+    X(PAIRING_REQUEST, 0x04)              \
+    X(CONNECT_RESULT, 0x05)               \
+    X(DISCONNECT, 0x06)                   \
+    X(ADD_REMOVE_CONNECTING_DEVICE, 0x07) \
+    X(CONNECT_REQUESTED, 0x08)            \
+    X(CONNECT_UNPAIRED, 0x09)             \
+    X(UNKNOWN0A, 0x0A)                    \
+    X(UNKNOWN0B, 0x0B)                    \
+    X(UNKNOWN0C, 0x0C)                    \
+    X(BUTTON_PRESSED, 0x0D)               \
+    X(UNKNOWN0E, 0x0E)                    \
+    X(UNKNOWN10, 0x10)                    \
+    X(UNKNOWN11, 0x11)                    \
+    X(TOGGLE_BLUETOOTH, 0x15)             \
+    X(UNKNOWN1C, 0x1C)
 typedef enum VapptfInferredBtEventId : unsigned char {
-    VAPPTF_SCE_BT_EVENT_INQUIRY_RESULT = 0x01,
-    VAPPTF_SCE_BT_EVENT_INQUIRY_STOP = 0x02,
-    VAPPTF_SCE_BT_EVENT_PAIRING_REQUEST = 0x04,
-    VAPPTF_SCE_BT_EVENT_CONNECT_RESULT = 0x05,
-    VAPPTF_SCE_BT_EVENT_DISCONNECT = 0x06,
-    VAPPTF_SCE_BT_EVENT_ADD_REMOVE_CONNECTING_DEVICE = 0x07,
-    VAPPTF_SCE_BT_EVENT_CONNECT_REQUESTED = 0x08,
-    VAPPTF_SCE_BT_EVENT_CONNECT_UNPAIRED = 0x09,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN0A = 0x0A,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN0B = 0x0B,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN0C = 0x0C,
-    VAPPTF_SCE_BT_EVENT_BUTTON_PRESSED = 0x0D,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN0E = 0x0E,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN10 = 0x10,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN11 = 0x11,
-    VAPPTF_SCE_BT_EVENT_TOGGLE_BLUETOOTH = 0x15,
-    VAPPTF_SCE_BT_EVENT_UNKNOWN1C = 0x1C,
+#define X(name, val) VAPPTF_SCE_BT_EVENT_##name = (val),
+    VAPPTF_SCE_BT_EVENT_LIST(X)
+#undef X
 } VapptfInferredBtEventId;
 static_assert(sizeof(VapptfInferredBtEventId) == sizeof(((SceBtEvent*)0)->id), "SceBtEvent.id changed size?");
 

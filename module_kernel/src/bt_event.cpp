@@ -80,7 +80,19 @@ static void handle_event(const SceBtEvent* event) {
     }
 #endif  // NDEBUG
 
-    // TODO log enum field name?
+    // Log known event name.
+#ifndef NDEBUG
+    switch (event->id) {
+#define X(name, val)                                              \
+    case val:                                                     \
+        LOG_DEBUG(0, INDENT "Event: VAPPTF_SCE_BT_EVENT_" #name); \
+        break;
+        VAPPTF_SCE_BT_EVENT_LIST(X)
+#undef X
+        default:
+            break;
+    }
+#endif  // NDEBUG
 }
 
 /**
