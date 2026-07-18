@@ -77,6 +77,11 @@ int dump_module_init(void) {
     } else {
         LOG_DEBUG(0, "ksceKernelGetModuleInfoByAddr resolved at 0x%08X", (unsigned)(uintptr_t)s_getModuleInfoByAddr);
     }
+
+    // Ensure output directory exists.
+    ksceIoMkdir(LOGFILE_DIR_PARENT, 0777);
+    ksceIoMkdir(DUMP_DIR, 0777);
+
     return ret;
 }
 
@@ -113,10 +118,6 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
         LOG_ERROR("ksceKernelGetModuleInfoByAddr = 0x%08X", ret);
         return ret;
     }
-
-    // Ensure output directory exists.
-    ksceIoMkdir(LOGFILE_DIR_PARENT, 0777);
-    ksceIoMkdir(DUMP_DIR, 0777);
 
     for (int i = 0; i < 4; i++) {
         SceKernelSegmentInfo* seg = &minfo.segments[i];

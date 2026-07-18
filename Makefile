@@ -60,6 +60,14 @@ ifndef PSVITA_IP
 endif
 	wget --quiet -P $(@) -nH --cut-dirs=3 --mirror "ftp://$(PSVITA_IP):1337/ux0:/$(PROJECT_NAME)/logs/*.log"
 
+.PHONY: fetch-dumps
+fetch-dumps: _HELP = Download project dump files (requires vitacompanion)
+fetch-dumps:
+ifndef PSVITA_IP
+	$(error PSVITA_IP is not set. Install https://github.com/devnoname120/vitacompanion on the Vita and set PSVITA_IP.")
+endif
+	wget --quiet -P $(@) -nH --cut-dirs=3 --mirror "ftp://$(PSVITA_IP):1337/ux0:/$(PROJECT_NAME)/dumps/*.bin"
+
 .PHONY: tail-todays-log
 tail-todays-log: _HELP = Print the last $NUMLINES in today's log file (calls fetch-logs)
 tail-todays-log: NUMLINES = 50
