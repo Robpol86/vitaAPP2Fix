@@ -101,6 +101,7 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
     if (expected_nid != 0 && tinfo.module_nid != expected_nid) {
         LOG_WARN("Module NID 0x%08X != expected 0x%08X -- offsets from this dump would not match. Aborting.",
                  tinfo.module_nid, expected_nid);
+        LOG_WARN("If this is your intended firmware, update the expected_nid to 0x%08X and rebuild.", tinfo.module_nid);
         return -1;
     }
 
