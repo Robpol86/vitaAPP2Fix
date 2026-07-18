@@ -47,14 +47,20 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 extern "C" int module_get_export_func(SceUID pid, const char* modname, uint32_t libnid, uint32_t funcnid,
                                       uintptr_t* func);
 
-// ksceKernelGetModuleInfo NID from db/360/SceKernelModulemgr.yml
-// Library NID: SceModulemgrForKernel = 0xC445FA63
-// Function NID: ksceKernelGetModuleInfo = 0xD269F915
-#define NID_LIB_SceModulemgrForKernel 0xC445FA63
-#define NID_FN_ksceKernelGetModuleInfo 0xD269F915
+// ksceKernelGetModuleInfoByAddr from db/360/SceKernelModulemgr.yml
+// Library NID: SceModulemgrForDriver  = 0xD4A60A52  (driver-facing, always reachable)
+// Function NID: ksceKernelGetModuleInfoByAddr = 0x1D9E0F7E
+//
+// We use the ByAddr variant rather than the modid one because the modid variant
+// lives in SceModulemgrForKernel (kernel-only exports are not resolvable via
+// module_get_export_func from a plugin -- confirmed empirically: that call
+// returned TAI_ERROR_NOT_FOUND / 0x90010002). ByAddr takes an address inside
+// the target module, which we already have in tai_module_info_t.exports_start.
+#define NID_LIB_SceModulemgrForDriver 0xD4A60A52
+#define NID_FN_ksceKernelGetModuleInfoByAddr 0x1D9E0F7E
 
-typedef int (*GetModuleInfo_t)(SceUID pid, SceUID modid, SceKernelModuleInfo* info);
-static GetModuleInfo_t s_getModuleInfo = NULL;
+typedef int (*GetModuleInfoByAddr_t)(SceUID pid, const void* addr, SceKernelModuleInfo* info);
+static GetModuleInfoByAddr_t s_getModuleInfoByAddr = NULL;
 
 #define DUMP_DIR LOGFILE_DIR_PARENT "/dumps/"
 #define COPY_CHUNK 0x8000
@@ -63,24 +69,24 @@ static unsigned char g_bounce[COPY_CHUNK];
 
 // Call once at module_start, after taiHEN is ready.
 int dump_module_init(void) {
-    int ret = module_get_export_func(KERNEL_PID, "SceKernelModulemgr", NID_LIB_SceModulemgrForKernel,
-                                     NID_FN_ksceKernelGetModuleInfo, (uintptr_t*)&s_getModuleInfo);
+    int ret = module_get_export_func(KERNEL_PID, "SceKernelModulemgr", NID_LIB_SceModulemgrForDriver,
+                                     NID_FN_ksceKernelGetModuleInfoByAddr, (uintptr_t*)&s_getModuleInfoByAddr);
     if (ret < 0) {
-        LOG_ERROR("module_get_export_func(ksceKernelGetModuleInfo) = 0x%08X", ret);
-        s_getModuleInfo = NULL;
+        LOG_ERROR("module_get_export_func(ksceKernelGetModuleInfoByAddr) = 0x%08X", ret);
+        s_getModuleInfoByAddr = NULL;
     } else {
-        LOG_DEBUG(0, "ksceKernelGetModuleInfo resolved at 0x%08X", (unsigned)(uintptr_t)s_getModuleInfo);
+        LOG_DEBUG(0, "ksceKernelGetModuleInfoByAddr resolved at 0x%08X", (unsigned)(uintptr_t)s_getModuleInfoByAddr);
     }
     return ret;
 }
 
 int dump_module(const char* module_name, unsigned int expected_nid) {
-    if (s_getModuleInfo == NULL) {
+    if (s_getModuleInfoByAddr == NULL) {
         LOG_ERROR("dump_module: not initialised, call dump_module_init() first");
         return -1;
     }
 
-    // Resolve the module to a modid and verify NID.
+    // Resolve the module to a modid and get an address inside it (for ByAddr).
     tai_module_info_t tinfo;
     tinfo.size = sizeof(tinfo);
     int ret = taiGetModuleInfoForKernel(KERNEL_PID, module_name, &tinfo);
@@ -88,7 +94,8 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
         LOG_ERROR("taiGetModuleInfoForKernel(\"%s\") = 0x%08X", module_name, ret);
         return ret;
     }
-    LOG_DEBUG(0, "Module \"%s\": modid=0x%08X nid=0x%08X", module_name, tinfo.modid, tinfo.module_nid);
+    LOG_DEBUG(0, "Module \"%s\": modid=0x%08X nid=0x%08X exports_start=0x%08X", module_name, tinfo.modid,
+              tinfo.module_nid, (unsigned)tinfo.exports_start);
 
     // Guard against reversing the wrong build's offsets.
     if (expected_nid != 0 && tinfo.module_nid != expected_nid) {
@@ -97,12 +104,12 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
         return -1;
     }
 
-    // Fetch segment layout via the runtime-resolved function.
+    // ByAddr wants any address inside the module. exports_start is one.
     SceKernelModuleInfo minfo;
     minfo.size = sizeof(minfo);
-    ret = s_getModuleInfo(KERNEL_PID, tinfo.modid, &minfo);
+    ret = s_getModuleInfoByAddr(KERNEL_PID, (const void*)tinfo.exports_start, &minfo);
     if (ret < 0) {
-        LOG_ERROR("ksceKernelGetModuleInfo = 0x%08X", ret);
+        LOG_ERROR("ksceKernelGetModuleInfoByAddr = 0x%08X", ret);
         return ret;
     }
 
