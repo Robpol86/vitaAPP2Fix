@@ -227,6 +227,23 @@ static void walk_capabilities(const unsigned char* p, unsigned int len) {
     }
 }
 
+// Decode the SEP list from a DISCOVER ACCEPT response. Each Stream End Point is
+// two bytes:
+//   byte0: [ACP SEID :6][in_use :1][rfa :1]
+//   byte1: [media_type :4][tsep :1][rfa :3]   (tsep 0 = SRC, 1 = SNK)
+// This is the only place the peer's SEIDs are visible from the RX side, and the
+// SBC SEP's SEID here is what an injected GET_CONFIGURATION would need to target.
+static void decode_discover(const unsigned char* p, unsigned int len) {
+    for (unsigned int i = 0; i + 2 <= len; i += 2) {
+        unsigned int seid = (p[i] >> 2) & 0x3F;
+        unsigned int in_use = (p[i] >> 1) & 0x01;
+        unsigned int media_type = (p[i + 1] >> 4) & 0x0F;
+        unsigned int tsep = (p[i + 1] >> 3) & 0x01;
+        const char* media = media_type == 0 ? "audio" : (media_type == 1 ? "video" : "multimedia");
+        LOG_DEBUG(0, "  SEP seid=%u media=%s type=%s in_use=%u", seid, media, tsep ? "SNK" : "SRC", in_use);
+    }
+}
+
 void avdtp_parse(const unsigned char* pdu, unsigned int len) {
     if (len < 2) return;
 
@@ -241,10 +258,13 @@ void avdtp_parse(const unsigned char* pdu, unsigned int len) {
     if (pkttype != 0) return;
 
     // Capability-bearing PDUs we care about:
+    //   DISCOVER ACCEPT: SEP list starts at byte 2.
     //   GET_CAPABILITIES / GET_ALL_CAPABILITIES ACCEPT: caps start at byte 2.
     //   SET_CONFIGURATION CMD: byte2=ACP SEID, byte3=INT SEID, caps start at 4.
     //   GET_CONFIGURATION ACCEPT: caps start at byte 2.
-    if ((sig == 0x02 || sig == 0x0C) && msgtype == 0x2) {
+    if (sig == 0x01 && msgtype == 0x2) {
+        decode_discover(&pdu[2], len - 2);
+    } else if ((sig == 0x02 || sig == 0x0C) && msgtype == 0x2) {
         walk_capabilities(&pdu[2], len - 2);
     } else if (sig == 0x03 && msgtype == 0x0) {
         if (len >= 4) {
