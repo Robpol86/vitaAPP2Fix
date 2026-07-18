@@ -50,7 +50,7 @@ extern "C" int module_start(SceSize args, const void* argp) {
 
     // Experiment (TODO remove).
 #ifndef NDEBUG
-    scmst_experiment_run();
+    scmst_experiment_run(1);
 #endif
 
     LOG_INFO("Started");

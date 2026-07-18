@@ -23,11 +23,14 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define SCMST_EXPERIMENT_H
 
 /**
- * Attempts to disable SCMS-T content protection on the Vita's A2DP source and
- * logs the result. Intended to be called once from module_start.
+ * Calls ksceBtSetContentProtection(arg) and logs the outcome. The semantics of
+ * arg (0 vs 1 = disable vs enable) are not documented in the header; run once
+ * with each value and observe APP1 (control) behaviour to determine which
+ * value disables SCMS-T.
  *
- * @return The value returned by ksceBtSetContentProtection.
+ * @param arg  Value to pass to ksceBtSetContentProtection.
+ * @return     The value returned by ksceBtSetContentProtection.
  */
-int scmst_experiment_run(void);
+int scmst_experiment_run(int arg);
 
 #endif  // SCMST_EXPERIMENT_H
