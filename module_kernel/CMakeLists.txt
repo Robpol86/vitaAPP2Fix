@@ -10,6 +10,8 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/exports.yml.in" "${EXPORTS_YML}" @ON
 
 add_executable("${MODULE_NAME}"
   src/main.cpp
+  src/avdtp_hook.cpp
+  src/avdtp_parse.cpp
   src/bt_audio_hook.cpp
   src/bt_event.cpp
   src/logfile.cpp

@@ -34,6 +34,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/kernel/threadmgr.h>
 #include <stdbool.h>
 
+#include "avdtp_hook.h"
 #include "bt_audio_hook.h"
 #include "log.h"
 #include "sce_const.h"
@@ -106,9 +107,11 @@ static void handle_event(const SceBtEvent* event) {
             case 0x09:
                 LOG_DEBUG(0, INDENT "Bluetooth turned on");
                 bt_audio_hook_start();
+                avdtp_hook_start();
                 break;
             case 0x20:
                 LOG_DEBUG(0, INDENT "Bluetooth turned off");
+                avdtp_hook_stop();
                 bt_audio_hook_stop();
                 break;
             default:
