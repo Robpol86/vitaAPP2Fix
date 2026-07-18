@@ -34,6 +34,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/kernel/threadmgr.h>
 #include <stdbool.h>
 
+#include "bt_audio_hook.h"
 #include "log.h"
 #include "sce_const.h"
 #include "vapptf.h"
@@ -93,6 +94,28 @@ static void handle_event(const SceBtEvent* event) {
             break;
     }
 #endif  // NDEBUG
+
+    // React to bluetooth power toggle. We treat every TOGGLE_BLUETOOTH event as
+    // an opportunity to re-arm the audio hooks and reset the SendAudio counter,
+    // so the first few media packets after each BT power-on are captured fresh.
+    // bt_audio_hook_start() is idempotent -- if hooks are already installed it
+    // just resets the counter -- so this is safe whether TOGGLE fires only on
+    // off->on or on both transitions.
+    if (event->id == VAPPTF_SCE_BT_EVENT_TOGGLE_BLUETOOTH) {
+        switch (event->unk3) {
+            case 0x09:
+                LOG_DEBUG(0, INDENT "Bluetooth turned on");
+                bt_audio_hook_start();
+                break;
+            case 0x20:
+                LOG_DEBUG(0, INDENT "Bluetooth turned off");
+                bt_audio_hook_stop();
+                break;
+            default:
+                LOG_DEBUG(0, INDENT "Ignoring unk3=0x%08X", event->unk3);
+                break;
+        }
+    }
 }
 
 /**

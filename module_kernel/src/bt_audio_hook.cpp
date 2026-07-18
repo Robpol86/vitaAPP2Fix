@@ -73,6 +73,11 @@ static SceUID uid_stop = -1;
 static SceUID uid_send = -1;
 static SceUID uid_freq = -1;
 
+// SendAudio packet counter. Reset by bt_audio_hook_reset_counter() -- typically
+// called from the TOGGLE_BLUETOOTH event handler so each BT power-on gives a
+// fresh first-N packets in the log.
+static int send_count = 0;
+
 // StartAudio: fires when the Vita opens/starts the A2DP media stream. If this
 // is absent for the APP2, negotiation failed before streaming -> Tier 2.
 static int hook_start_audio(int r0, int r1, int r2, int r3) {
@@ -98,16 +103,27 @@ static int hook_stop_audio(int r0, int r1, int r2, int r3) {
 
 // SendAudio fires per media packet -- VERY chatty. Left rate-limited to the
 // first few calls so you can confirm packets flow without flooding the log.
+// The counter is a file-scope int reset by bt_audio_hook_reset_counter().
 static int hook_send_audio(int r0, int r1, int r2, int r3) {
-    static int count = 0;
-    if (count < 8) {
-        LOG_DEBUG(0, "ksceBtSendAudio(r0=0x%08X r1=0x%08X r2=0x%08X r3=0x%08X) #%d", r0, r1, r2, r3, count);
-        count++;
+    if (send_count < 8) {
+        LOG_DEBUG(0, "ksceBtSendAudio(r0=0x%08X r1=0x%08X r2=0x%08X r3=0x%08X) #%d", r0, r1, r2, r3, send_count);
+        send_count++;
     }
     return bt_continue(ref_send, r0, r1, r2, r3);
 }
 
+// Idempotent: if hooks are already installed, just resets the counter. This
+// makes it safe to invoke on every TOGGLE_BLUETOOTH event without worrying
+// about whether the event fires only on off->on or on both transitions.
 int bt_audio_hook_start(void) {
+    send_count = 0;
+
+    if (uid_start >= 0 || uid_freq >= 0 || uid_stop >= 0 || uid_send >= 0) {
+        LOG_DEBUG(0, "Hooks already installed, counter reset only");
+        return 0;
+    }
+    LOG_DEBUG(0, "STARTING EXPERIMENT");
+
     uid_start = taiHookFunctionExportForKernel(KERNEL_PID, &ref_start, "SceBt", TAI_ANY_LIBRARY, NID_ksceBtStartAudio,
                                                (const void*)hook_start_audio);
     LOG_DEBUG(0, "hook StartAudio -> 0x%08X", uid_start);
@@ -127,7 +143,9 @@ int bt_audio_hook_start(void) {
     return 0;
 }
 
+// Idempotent: safe to call regardless of hook state.
 int bt_audio_hook_stop(void) {
+    LOG_DEBUG(0, "STOPPING EXPERIMENT");
     if (uid_send >= 0) taiHookReleaseForKernel(uid_send, ref_send), uid_send = -1;
     if (uid_stop >= 0) taiHookReleaseForKernel(uid_stop, ref_stop), uid_stop = -1;
     if (uid_freq >= 0) taiHookReleaseForKernel(uid_freq, ref_freq), uid_freq = -1;

@@ -21,7 +21,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <psp2kern/kernel/modulemgr.h>
 
-#include "bt_audio_hook.h"
 #include "bt_event.h"
 #include "log.h"
 #include "logfile.h"
@@ -48,15 +47,6 @@ extern "C" int module_start(SceSize args, const void* argp) {
         return SCE_KERNEL_START_FAILED;
     }
 
-    // Start the A2DP audio hook. This is Tier 1 of the fix.
-    LOG_INFO("STARTING EXPERIMENT");
-    ret = bt_audio_hook_start();
-    if (ret < 0) {
-        LOG_ERROR("bt_audio_hook_start returned error 0x%08X", ret);
-        return SCE_KERNEL_START_FAILED;
-    }
-    LOG_INFO("DONE STARTING EXPERIMENT");
-
     LOG_INFO("Started");
 
     return SCE_KERNEL_START_SUCCESS;
@@ -77,15 +67,8 @@ extern "C" int module_stop(SceSize args, const void* argp) {
 
     LOG_INFO("Stopping");
 
-    // Stop the A2DP audio hook.
-    int ret = bt_audio_hook_stop();
-    if (ret < 0) {
-        LOG_ERROR("bt_audio_hook_stop returned error 0x%08X", ret);
-        failed = true;
-    }
-
     // Stop system blueooth event listener thread.
-    ret = bt_event_stop();
+    int ret = bt_event_stop();
     if (ret < 0) {
         LOG_ERROR("bt_event_stop returned error 0x%08X", ret);
         failed = true;
