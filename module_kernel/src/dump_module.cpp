@@ -40,12 +40,13 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "log.h"
 #include "logfile.h"  // For LOGFILE_DIR_PARENT (ux0:<PROJECT_NAME>).
 
-// module_get_export_func is exported by taihenModuleUtils but only declared in
-// taiHEN's internal module.h -- public taihen.h omits it. Forward-declare with
-// C linkage so the stub resolves at link time. Signature is verbatim from
-// upstream taiHEN module.h.
+// module_get_export_func and module_get_offset are exported by
+// taihenModuleUtils but only declared in taiHEN's internal module.h -- public
+// taihen.h omits them. Forward-declare with C linkage so the stubs resolve at
+// link time. Signatures verbatim from upstream taiHEN module.h.
 extern "C" int module_get_export_func(SceUID pid, const char* modname, uint32_t libnid, uint32_t funcnid,
                                       uintptr_t* func);
+extern "C" int module_get_offset(SceUID pid, SceUID modid, int segidx, size_t offset, uintptr_t* addr);
 
 // ksceKernelGetModuleInfoByAddr from db/360/SceKernelModulemgr.yml
 // Library NID: SceModulemgrForDriver  = 0xD4A60A52  (driver-facing, always reachable)
@@ -110,10 +111,23 @@ int dump_module(const char* module_name, unsigned int expected_nid) {
         return -1;
     }
 
-    // ByAddr wants any address inside the module. exports_start is one.
+    // ByAddr wants any address that SceKernelModulemgr recognises as belonging
+    // to the target module. taiHEN's tinfo.exports_start is a pointer into
+    // taiHEN's parsed export table, NOT necessarily a kernel-module-owned
+    // address -- SceKernelModulemgr will reject it with 0x8002D082
+    // (LIBRARYDB_NO_MOD). The correct approach: ask taihenModuleUtils for the
+    // base of segment 0 (.text). That IS a real module-owned address.
+    uintptr_t seg0_base = 0;
+    ret = module_get_offset(KERNEL_PID, tinfo.modid, 0, 0, &seg0_base);
+    if (ret < 0) {
+        LOG_ERROR("module_get_offset(seg0) = 0x%08X", ret);
+        return ret;
+    }
+    LOG_DEBUG(0, "seg0 base = 0x%08X", (unsigned)seg0_base);
+
     SceKernelModuleInfo minfo;
     minfo.size = sizeof(minfo);
-    ret = s_getModuleInfoByAddr(KERNEL_PID, (const void*)tinfo.exports_start, &minfo);
+    ret = s_getModuleInfoByAddr(KERNEL_PID, (const void*)seg0_base, &minfo);
     if (ret < 0) {
         LOG_ERROR("ksceKernelGetModuleInfoByAddr = 0x%08X", ret);
         return ret;
