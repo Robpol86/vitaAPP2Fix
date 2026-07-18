@@ -40,9 +40,38 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "bt_audio_hook.h"
 
 #include <psp2kern/kernel/modulemgr.h>
+#include <psp2kern/kernel/sysclib.h>
+#include <psp2kern/kernel/sysmem.h>
 #include <taihen.h>
 
 #include "log.h"
+
+#define INDENT_HDR "==> "
+
+// Decode the header of an SBC frame for logging. An SBC frame begins:
+//   byte0: 0x9C  (sync word)
+//   byte1: [sampling_freq :2][block_length :2][channel_mode :2][allocation :1][subbands :1]
+//   byte2: bitpool
+//   byte3: CRC
+// This tells us the actual codec parameters on the wire, independent of what
+// AVDTP negotiated. If APP1 and APP2 frames differ here, that's the smoking gun.
+static void log_sbc_frame_header(const unsigned char* f) {
+    if (f[0] != 0x9C) {
+        LOG_DEBUG(0, INDENT_HDR "not an SBC frame (byte0=0x%02X, expected 0x9C)", f[0]);
+        return;
+    }
+    unsigned int b1 = f[1];
+    unsigned int samp = (b1 >> 6) & 0x3;
+    unsigned int blocks = (b1 >> 4) & 0x3;
+    unsigned int chan = (b1 >> 2) & 0x3;
+    unsigned int alloc = (b1 >> 1) & 0x1;
+    unsigned int subbands = b1 & 0x1;
+    static const char* samp_s[] = {"16kHz", "32kHz", "44.1kHz", "48kHz"};
+    static const char* block_s[] = {"4", "8", "12", "16"};
+    static const char* chan_s[] = {"mono", "dual", "stereo", "joint"};
+    LOG_DEBUG(0, INDENT_HDR "SBC frame: samp=%s blocks=%s chan=%s alloc=%s subbands=%s bitpool=%u", samp_s[samp],
+              block_s[blocks], chan_s[chan], alloc ? "SNR" : "Loudness", subbands ? "4" : "8", f[2]);
+}
 
 // SceBtForDriver NIDs (firmware 3.60/3.65, from vita-headers db/360/SceBt.yml).
 #define NID_ksceBtStartAudio 0x8D47CABD
@@ -104,9 +133,41 @@ static int hook_stop_audio(int r0, int r1, int r2, int r3) {
 // SendAudio fires per media packet -- VERY chatty. Left rate-limited to the
 // first few calls so you can confirm packets flow without flooding the log.
 // The counter is a file-scope int reset by bt_audio_hook_reset_counter().
+//
+// r2 is the media buffer pointer, r3 its length. The ELF shows ksceBtSendAudio
+// only STORES r2 into a hardware queue and never dereferences it from the CPU,
+// so r2 may be a physical/DMA address that is NOT safe to read directly.
+// We therefore validate it with ksceKernelVAtoPA first: if it doesn't translate
+// as a CPU virtual address, we log that fact and DO NOT read it (avoids a panic).
+// If it does translate, we copy the first 16 bytes via a guarded copy and decode
+// the SBC frame header.
 static int hook_send_audio(int r0, int r1, int r2, int r3) {
     if (send_count < 8) {
         LOG_DEBUG(0, "ksceBtSendAudio(r0=0x%08X r1=0x%08X r2=0x%08X r3=0x%08X) #%d", r0, r1, r2, r3, send_count);
+
+        if (r2 != 0 && r3 >= 4) {
+            uintptr_t pa = 0;
+            int va_ok = ksceKernelVAtoPA((const void*)r2, &pa);
+            if (va_ok < 0) {
+                // buffer is likely a DMA/phys address, not reading it.
+                LOG_DEBUG(0, INDENT_HDR "r2=0x%08X does not translate as a CPU VA (VAtoPA=0x%08X)", r2, va_ok);
+            } else {
+                // Safe to read: copy a small header window out and decode.
+                unsigned char frame[16];
+                memcpy(frame, (const void*)r2, sizeof(frame));
+                char hex[3 * 16 + 1];
+                for (int i = 0; i < 16; i++) {
+                    const char* d = "0123456789ABCDEF";
+                    hex[i * 3 + 0] = d[(frame[i] >> 4) & 0xF];
+                    hex[i * 3 + 1] = d[frame[i] & 0xF];
+                    hex[i * 3 + 2] = ' ';
+                }
+                hex[16 * 3] = '\0';
+                LOG_DEBUG(0, INDENT_HDR "buf[0:16] (pa=0x%08X): %s", (unsigned)pa, hex);
+                log_sbc_frame_header(frame);
+            }
+        }
+
         send_count++;
     }
     return bt_continue(ref_send, r0, r1, r2, r3);
