@@ -37,6 +37,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "avdtp_hook.h"
 #include "bt_audio_hook.h"
 #include "log.h"
+#include "sbc_freq_patch.h"
 #include "sce_const.h"
 #include "vapptf.h"
 
@@ -108,11 +109,13 @@ static void handle_event(const SceBtEvent* event) {
                 LOG_DEBUG(0, INDENT "Bluetooth turned on");
                 bt_audio_hook_start();
                 avdtp_hook_start();
+                sbc_freq_patch_start();
                 break;
             case 0x20:
                 LOG_DEBUG(0, INDENT "Bluetooth turned off");
                 avdtp_hook_stop();
                 bt_audio_hook_stop();
+                sbc_freq_patch_stop();
                 break;
             default:
                 LOG_DEBUG(0, INDENT "Ignoring unk3=0x%08X", event->unk3);
