@@ -12,6 +12,7 @@ add_executable("${MODULE_NAME}"
   src/main.cpp
   src/bt_event.cpp
   src/logfile.cpp
+  src/scmst_experiment.cpp
 )
 
 target_compile_definitions("${MODULE_NAME}" PRIVATE ENABLE_VITASDK_BUILD_ASSERT)

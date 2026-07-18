@@ -24,6 +24,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "bt_event.h"
 #include "log.h"
 #include "logfile.h"
+#include "scmst_experiment.h"
 
 /**
  * Main entrypoint. Called when the module is started.
@@ -46,6 +47,11 @@ extern "C" int module_start(SceSize args, const void* argp) {
         LOG_ERROR("bt_event_start returned error 0x%08X", ret);
         return SCE_KERNEL_START_FAILED;
     }
+
+    // Experiment (TODO remove).
+#ifndef NDEBUG
+    scmst_experiment_run();
+#endif
 
     LOG_INFO("Started");
 
