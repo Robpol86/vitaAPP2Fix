@@ -37,6 +37,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
  * you can extend this to dump a buffer -- carefully, with a bounds check.
  ******************************************************************************/
 
+#include "bt_audio_hook.h"
+
 #include <psp2kern/kernel/modulemgr.h>
 #include <taihen.h>
 
