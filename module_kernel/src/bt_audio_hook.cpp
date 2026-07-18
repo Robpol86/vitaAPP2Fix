@@ -142,35 +142,52 @@ static int hook_stop_audio(int r0, int r1, int r2, int r3) {
 // If it does translate, we copy the first 16 bytes via a guarded copy and decode
 // the SBC frame header.
 static int hook_send_audio(int r0, int r1, int r2, int r3) {
-    if (send_count < 8) {
-        LOG_DEBUG(0, "ksceBtSendAudio(r0=0x%08X r1=0x%08X r2=0x%08X r3=0x%08X) #%d", r0, r1, r2, r3, send_count);
+    bool want_log = (send_count < 8);
 
-        if (r2 != 0 && r3 >= 4) {
-            uintptr_t pa = 0;
-            int va_ok = ksceKernelVAtoPA((const void*)r2, &pa);
-            if (va_ok < 0) {
-                // buffer is likely a DMA/phys address, not reading it.
-                LOG_DEBUG(0, INDENT_HDR "r2=0x%08X does not translate as a CPU VA (VAtoPA=0x%08X)", r2, va_ok);
-            } else {
-                // Safe to read: copy a small header window out and decode.
-                unsigned char frame[16];
-                memcpy(frame, (const void*)r2, sizeof(frame));
-                char hex[3 * 16 + 1];
-                for (int i = 0; i < 16; i++) {
-                    const char* d = "0123456789ABCDEF";
-                    hex[i * 3 + 0] = d[(frame[i] >> 4) & 0xF];
-                    hex[i * 3 + 1] = d[frame[i] & 0xF];
-                    hex[i * 3 + 2] = ' ';
-                }
-                hex[16 * 3] = '\0';
-                LOG_DEBUG(0, INDENT_HDR "buf[0:16] (pa=0x%08X): %s", (unsigned)pa, hex);
-                log_sbc_frame_header(frame);
-            }
+    // Snapshot the buffer BEFORE the call.
+    unsigned char before[16];
+    bool before_ok = false;
+    if (want_log && r2 != 0 && r3 >= 4) {
+        uintptr_t pa = 0;
+        if (ksceKernelVAtoPA((const void*)r2, &pa) >= 0) {
+            memcpy(before, (const void*)r2, sizeof(before));
+            before_ok = true;
         }
+    }
 
+    int ret = bt_continue(ref_send, r0, r1, r2, r3);
+
+    // Snapshot AFTER the call: the SBC encoder may fill the buffer during/after
+    // SendAudio rather than before it. Compare before vs after to learn WHEN the
+    // data lands, and decode whichever snapshot actually contains a frame.
+    if (want_log) {
+        LOG_DEBUG(0, "ksceBtSendAudio(r0=0x%08X r1=0x%08X r2=0x%08X r3=0x%08X) #%d -> 0x%08X", r0, r1, r2, r3, send_count,
+                  ret);
+        if (before_ok) {
+            unsigned char after[16];
+            memcpy(after, (const void*)r2, sizeof(after));
+
+            char hb[3 * 16 + 1], ha[3 * 16 + 1];
+            const char* d = "0123456789ABCDEF";
+            for (int i = 0; i < 16; i++) {
+                hb[i * 3] = d[(before[i] >> 4) & 0xF];
+                hb[i * 3 + 1] = d[before[i] & 0xF];
+                hb[i * 3 + 2] = ' ';
+                ha[i * 3] = d[(after[i] >> 4) & 0xF];
+                ha[i * 3 + 1] = d[after[i] & 0xF];
+                ha[i * 3 + 2] = ' ';
+            }
+            hb[48] = ha[48] = '\0';
+            LOG_DEBUG(0, INDENT_HDR "before: %s", hb);
+            LOG_DEBUG(0, INDENT_HDR "after:  %s", ha);
+            if (after[0] == 0x9C)
+                log_sbc_frame_header(after);
+            else if (before[0] == 0x9C)
+                log_sbc_frame_header(before);
+        }
         send_count++;
     }
-    return bt_continue(ref_send, r0, r1, r2, r3);
+    return ret;
 }
 
 // Idempotent: if hooks are already installed, just resets the counter. This
